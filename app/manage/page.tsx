@@ -1,1 +1,2 @@
-export default function ManagePage(){return <main className="authPage"><div className="authCard"><a href="/" className="logo">Rahayi<span>رهایی</span></a><h1>مدیریت مطالب</h1><p>برای مدیریت مطالب، ابتدا وارد حساب خود شوید.</p><a className="cta" href="/signin">ورود</a></div></main>}
+import ArticleManager from './articles'
+export default function ManagePage(){return <ArticleManager/>}
