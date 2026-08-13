@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase'
 
-type Row = { id: string; slug: string; title: string; category: string; excerpt: string; body: string; author: string; published: boolean; image_url?: string | null }
+type Row = { id: string; slug: string; title: string; category: string; excerpt: string; body: string; author: string; published: boolean; image_url?: string | null; views: number }
 
 const IMAGE_BUCKET = 'article-images'
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024
@@ -23,7 +23,7 @@ export default function ArticleManager() {
   async function load() {
     const { data, error } = await db.from('articles').select('*').order('created_at', { ascending: false })
     if (error) setMsg('اتصال به پایگاه داده برقرار نشد.')
-    else setRows((data || []) as Row[])
+    else setRows((data || []).map((item: any) => ({ ...item, views: Number(item.views || 0) })) as Row[])
   }
 
   useEffect(() => {
@@ -106,8 +106,12 @@ export default function ArticleManager() {
 
   function newArticle() {
     setMsg('')
-    setRow({ id: '', slug: '', title: '', category: 'تحلیل', excerpt: '', body: '', author: 'تحریریه رهایی', published: false, image_url: null })
+    setRow({ id: '', slug: '', title: '', category: 'تحلیل', excerpt: '', body: '', author: 'تحریریه رهایی', published: false, image_url: null, views: 0 })
   }
+
+  const totalViews = rows.reduce((sum, article) => sum + Number(article.views || 0), 0)
+  const publishedRows = rows.filter(article => article.published)
+  const topArticles = [...publishedRows].sort((a, b) => Number(b.views || 0) - Number(a.views || 0)).slice(0, 5)
 
   if (!ready) return <main className="authPage"><div className="authCard">در حال بررسی ورود…</div></main>
 
@@ -115,9 +119,24 @@ export default function ArticleManager() {
     <main className="adminPage"><div className="container">
       <div className="adminTop"><div><a href="/" className="logo">Rahayi<span>رهایی</span></a><h1>مدیریت مطالب</h1></div><button onClick={async () => { await db.auth.signOut(); location.href = '/' }}>خروج</button></div>
       {msg && <p className="notice">{msg}</p>}
+
+      <section className="statsPanel">
+        <div><span>بازدید کل</span><strong>{totalViews.toLocaleString('fa-IR')}</strong></div>
+        <div><span>مقالات منتشرشده</span><strong>{publishedRows.length.toLocaleString('fa-IR')}</strong></div>
+        <div><span>تعداد مطالب</span><strong>{rows.length.toLocaleString('fa-IR')}</strong></div>
+        <div><span>میانگین بازدید</span><strong>{publishedRows.length ? Math.round(totalViews / publishedRows.length).toLocaleString('fa-IR') : '۰'}</strong></div>
+      </section>
+
+      {topArticles.length > 0 && <section className="topArticles">
+        <h2>پربازدیدترین مطالب</h2>
+        {topArticles.map((article, index) => <div className="topArticle" key={article.id}>
+          <span>{(index + 1).toLocaleString('fa-IR')}</span><b>{article.title}</b><strong>{Number(article.views || 0).toLocaleString('fa-IR')} بازدید</strong>
+        </div>)}
+      </section>}
+
       <section className="setup"><strong>راه‌اندازی مدیر اول</strong><p>کد یک‌بارمصرف راه‌اندازی را وارد کنید.</p><input value={setup} onChange={e => setSetup(e.target.value)} placeholder="کد راه‌اندازی"/><button onClick={claim}>فعال‌سازی</button></section>
       <div className="adminActions"><button className="cta" onClick={newArticle}>+ مقاله جدید</button></div>
-      <div className="adminList">{rows.map(r => <div className="adminRow" key={r.id}><div><b>{r.title}</b><span>{r.category} · {r.published ? 'منتشر شده' : 'پیش‌نویس'}</span></div><div><button onClick={() => setRow(r)} disabled={saving}>ویرایش</button><button onClick={() => remove(r.id)} disabled={saving}>حذف</button></div></div>)}</div>
+      <div className="adminList">{rows.map(r => <div className="adminRow" key={r.id}><div><b>{r.title}</b><span>{r.category} · {r.published ? 'منتشر شده' : 'پیش‌نویس'} · {Number(r.views || 0).toLocaleString('fa-IR')} بازدید</span></div><div><button onClick={() => setRow(r)} disabled={saving}>ویرایش</button><button onClick={() => remove(r.id)} disabled={saving}>حذف</button></div></div>)}</div>
       {row && <form className="editor" onSubmit={save}>
         <h2>{row.id ? 'ویرایش مقاله' : 'مقاله جدید'}</h2>
         <input value={row.title} onChange={e => setRow({ ...row, title: e.target.value })} placeholder="عنوان" required disabled={saving}/>
