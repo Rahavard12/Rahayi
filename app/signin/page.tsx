@@ -1,20 +1,13 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase'
 
 export default function SignIn(){
- const [email,setEmail]=useState('')
- const [code,setCode]=useState('')
- const [error,setError]=useState('')
- const [message,setMessage]=useState('')
- const [sending,setSending]=useState(false)
+ const [email,setEmail]=useState(''); const [code,setCode]=useState(''); const [newPassword,setNewPassword]=useState(''); const [confirmPassword,setConfirmPassword]=useState('')
+ const [error,setError]=useState(''); const [message,setMessage]=useState(''); const [sending,setSending]=useState(false); const [recovery,setRecovery]=useState(false)
+ useEffect(()=>{const db=createClient();const {data}=db.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY') setRecovery(true)});return()=>data.subscription.unsubscribe()},[])
  async function go(e:any){e.preventDefault();setError('');const r=await createClient().auth.signInWithPassword({email:email.trim(),password:code});if(r.error){setError('ورود ناموفق بود. ایمیل یا رمز عبور را بررسی کنید.')}else{location.href='/manage'}}
- async function forgot(){
-  if(!email.trim()){setError('ابتدا ایمیل خود را وارد کنید.');return}
-  setError('');setMessage('');setSending(true)
-  const r=await createClient().auth.resetPasswordForEmail(email.trim(),{redirectTo:'https://rahayi.vercel.app/reset-password'})
-  setSending(false)
-  if(r.error){setError('ارسال لینک بازیابی انجام نشد. تنظیمات Supabase را بررسی کنید.')}else{setMessage('لینک تغییر رمز عبور به ایمیل شما ارسال شد.')}
- }
- return <main className="authPage"><div className="authCard"><a href="/" className="logo">Rahayi<span>رهایی</span></a><h1>ورود</h1><form onSubmit={go}><input aria-label="ایمیل" type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="ایمیل" required/><input aria-label="رمز" type="password" value={code} onChange={e=>setCode(e.target.value)} placeholder="رمز" required/>{error&&<p className="error">{error}</p>}{message&&<p className="success">{message}</p>}<button className="cta" type="submit">ورود</button></form><button type="button" className="backLink" onClick={forgot} disabled={sending}>{sending?'در حال ارسال…':'فراموشی رمز عبور'}</button><a className="backLink" href="/signup">ساخت حساب مدیر</a></div></main>
+ async function forgot(){if(!email.trim()){setError('ابتدا ایمیل خود را وارد کنید.');return}setError('');setMessage('');setSending(true);const r=await createClient().auth.resetPasswordForEmail(email.trim(),{redirectTo:'https://rahayi.vercel.app/signin'});setSending(false);if(r.error){setError('ارسال لینک بازیابی انجام نشد.')}else{setMessage('لینک تغییر رمز عبور به ایمیل شما ارسال شد.')}}
+ async function savePassword(e:any){e.preventDefault();setError('');setMessage('');if(newPassword.length<8){setError('رمز عبور باید حداقل ۸ کاراکتر باشد.');return}if(newPassword!==confirmPassword){setError('تکرار رمز عبور یکسان نیست.');return}const r=await createClient().auth.updateUser({password:newPassword});if(r.error){setError('تغییر رمز عبور انجام نشد. لطفاً دوباره لینک بازیابی را درخواست کنید.')}else{setRecovery(false);setNewPassword('');setConfirmPassword('');setMessage('رمز عبور با موفقیت تغییر کرد. اکنون با رمز جدید وارد شوید.');await createClient().auth.signOut()}}
+ return <main className="authPage"><div className="authCard"><a href="/" className="logo">Rahayi<span>رهایی</span></a>{recovery?<><h1>تغییر رمز عبور</h1><form onSubmit={savePassword}><input type="password" value={newPassword} onChange={e=>setNewPassword(e.target.value)} placeholder="رمز جدید" minLength={8} required/><input type="password" value={confirmPassword} onChange={e=>setConfirmPassword(e.target.value)} placeholder="تکرار رمز جدید" minLength={8} required/>{error&&<p className="error">{error}</p>}{message&&<p className="success">{message}</p>}<button className="cta" type="submit">ذخیره رمز جدید</button></form></>:<><h1>ورود</h1><form onSubmit={go}><input aria-label="ایمیل" type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="ایمیل" required/><input aria-label="رمز" type="password" value={code} onChange={e=>setCode(e.target.value)} placeholder="رمز" required/>{error&&<p className="error">{error}</p>}{message&&<p className="success">{message}</p>}<button className="cta" type="submit">ورود</button></form><button type="button" className="backLink" onClick={forgot} disabled={sending}>{sending?'در حال ارسال…':'فراموشی رمز عبور'}</button></>}<a className="backLink" href="/signup">ساخت حساب مدیر</a></div></main>
 }
