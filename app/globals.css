@@ -105,13 +105,15 @@ footer small{margin-right:auto;color:#68716b}
 .sectionTitle h2{margin:0;color:#edf0ec;font-size:28px;line-height:1.5}
 .sectionTitle button{border:1px solid #414943;background:#1b201e;color:#d9dedb;padding:9px 14px;border-radius:4px;font:inherit;cursor:pointer}
 .sectionTitle button:disabled{opacity:.55;cursor:wait}
-.viewsChart{height:270px;display:grid;grid-template-columns:repeat(30,minmax(8px,1fr));gap:5px;align-items:end;border-top:1px solid #252c28;padding-top:16px;direction:ltr}
-.chartColumn{height:100%;min-width:0;display:grid;grid-template-rows:22px 1fr 24px;align-items:end;gap:4px;text-align:center}
-.chartValue{font-size:9px;color:#aeb6b0;direction:rtl;white-space:nowrap;overflow:hidden}
-.chartBarWrap{height:100%;display:flex;align-items:flex-end;justify-content:center}
-.chartBar{width:100%;max-width:22px;min-height:4px;background:#d4af37;border-radius:3px 3px 0 0;opacity:.9;transition:height .25s ease}
-.chartLabel{font-size:9px;color:#69736c;white-space:nowrap;transform:rotate(-45deg);transform-origin:top center;direction:ltr}
-.chartEmpty{min-height:270px;display:grid;place-items:center;color:#87918a}
+
+/* Stable 30-day analytics chart: horizontal labels, equal columns, responsive scroll on small screens. */
+.viewsChart{height:300px;display:grid;grid-template-columns:repeat(30,minmax(24px,1fr));gap:6px;align-items:stretch;border-top:1px solid #252c28;padding:18px 4px 8px;direction:ltr;overflow-x:auto;overflow-y:hidden;background:repeating-linear-gradient(to bottom,transparent 0,transparent 24.5%,#202622 25%,transparent 25.5%,transparent 49.5%,#202622 50%,transparent 50.5%,transparent 74.5%,#202622 75%,transparent 75.5%)}
+.chartColumn{height:100%;min-width:24px;display:grid;grid-template-rows:20px minmax(0,1fr) 20px;align-items:stretch;gap:5px;text-align:center}
+.chartValue{font-size:9px;line-height:20px;color:#aeb6b0;direction:rtl;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chartBarWrap{height:100%;display:flex;align-items:flex-end;justify-content:center;border-bottom:1px solid #343b37}
+.chartBar{width:min(22px,72%);height:0;min-height:0;background:#d4af37;border-radius:4px 4px 0 0;opacity:.92;transition:height .25s ease;box-shadow:0 0 0 1px rgba(212,175,55,.08)}
+.chartLabel{font-size:9px;line-height:20px;color:#7f8982;white-space:nowrap;direction:ltr;transform:none;overflow:visible}
+.chartEmpty{min-height:300px;display:grid;place-items:center;color:#87918a}
 .adminGrid{display:grid;grid-template-columns:minmax(330px,.85fr) minmax(0,1.15fr);gap:28px;align-items:start}
 .adminForm,.adminArticles{background:#171d1a;border:1px solid #303733;padding:26px}
 .adminForm form{display:grid;gap:15px}
@@ -175,7 +177,9 @@ footer small{margin-right:auto;color:#68716b}
   .topArticle strong{grid-column:2}
   .adminStats{grid-template-columns:repeat(2,1fr)}
   .viewsChartCard{padding:18px 12px}
-  .viewsChart{gap:3px;overflow-x:auto;min-width:620px}
+  .viewsChart{min-width:780px;height:285px;gap:5px}
+  .chartColumn{min-width:24px}
+  .chartLabel{font-size:9px}
   .viewsChartCard{overflow-x:auto}
   .sectionTitle h2{font-size:22px}
   .adminForm,.adminArticles{padding:18px}
