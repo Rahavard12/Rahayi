@@ -4,10 +4,14 @@ import { useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase'
 
 type Row = { id: string; slug: string; title: string; category: string; excerpt: string; body: string; author: string; published: boolean; image_url?: string | null; views: number }
+type DayStat = { date: string; views: number }
+type ViewStats = { today: number; last_7_days: number; last_30_days: number; daily: DayStat[] }
 
 const IMAGE_BUCKET = 'article-images'
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024
 const SAVE_TIMEOUT_MS = 15000
+
+const emptyStats: ViewStats = { today: 0, last_7_days: 0, last_30_days: 0, daily: [] }
 
 export default function ArticleManager() {
   const [rows, setRows] = useState<Row[]>([])
@@ -17,13 +21,31 @@ export default function ArticleManager() {
   const [ready, setReady] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [stats, setStats] = useState<ViewStats>(emptyStats)
+  const [statsLoading, setStatsLoading] = useState(false)
   const fileRef = useRef<HTMLInputElement | null>(null)
   const db = createClient()
+
+  async function loadStats() {
+    setStatsLoading(true)
+    const { data, error } = await db.rpc('get_article_view_stats')
+    if (!error && data) {
+      const value = Array.isArray(data) ? data[0] : data
+      setStats({
+        today: Number(value?.today || 0),
+        last_7_days: Number(value?.last_7_days || 0),
+        last_30_days: Number(value?.last_30_days || 0),
+        daily: Array.isArray(value?.daily) ? value.daily.map((item: any) => ({ date: String(item.date), views: Number(item.views || 0) })) : [],
+      })
+    }
+    setStatsLoading(false)
+  }
 
   async function load() {
     const { data, error } = await db.from('articles').select('*').order('created_at', { ascending: false })
     if (error) setMsg('اتصال به پایگاه داده برقرار نشد.')
     else setRows((data || []).map((item: any) => ({ ...item, views: Number(item.views || 0) })) as Row[])
+    await loadStats()
   }
 
   useEffect(() => {
@@ -112,6 +134,13 @@ export default function ArticleManager() {
   const totalViews = rows.reduce((sum, article) => sum + Number(article.views || 0), 0)
   const publishedRows = rows.filter(article => article.published)
   const topArticles = [...publishedRows].sort((a, b) => Number(b.views || 0) - Number(a.views || 0)).slice(0, 5)
+  const maxDailyViews = Math.max(1, ...stats.daily.map(item => item.views))
+  const chartDays = stats.daily.slice(-30)
+
+  function formatDay(value: string) {
+    const parts = value.split('-')
+    return parts.length === 3 ? `${parts[2]}/${parts[1]}` : value
+  }
 
   if (!ready) return <main className="authPage"><div className="authCard">در حال بررسی ورود…</div></main>
 
@@ -122,17 +151,28 @@ export default function ArticleManager() {
 
       <section className="statsPanel">
         <div><span>بازدید کل</span><strong>{totalViews.toLocaleString('fa-IR')}</strong></div>
-        <div><span>مقالات منتشرشده</span><strong>{publishedRows.length.toLocaleString('fa-IR')}</strong></div>
-        <div><span>تعداد مطالب</span><strong>{rows.length.toLocaleString('fa-IR')}</strong></div>
-        <div><span>میانگین بازدید</span><strong>{publishedRows.length ? Math.round(totalViews / publishedRows.length).toLocaleString('fa-IR') : '۰'}</strong></div>
+        <div><span>بازدید امروز</span><strong>{stats.today.toLocaleString('fa-IR')}</strong></div>
+        <div><span>۷ روز اخیر</span><strong>{stats.last_7_days.toLocaleString('fa-IR')}</strong></div>
+        <div><span>۳۰ روز اخیر</span><strong>{stats.last_30_days.toLocaleString('fa-IR')}</strong></div>
       </section>
 
-      {topArticles.length > 0 && <section className="topArticles">
+      <section className="visitAnalytics" dir="rtl">
+        <div className="visitAnalyticsHead">
+          <div><h2>آمار دقیق بازدیدها</h2><p>بر اساس رویدادهای واقعی ثبت‌شده در سایت</p></div>
+          <button type="button" onClick={loadStats} disabled={statsLoading}>{statsLoading ? 'در حال به‌روزرسانی…' : 'به‌روزرسانی'}</button>
+        </div>
+        <div className="visitChart" aria-label="نمودار بازدید ۳۰ روز اخیر">
+          {chartDays.length === 0 ? <div className="emptyChart">هنوز بازدیدی در بازهٔ آماری ثبت نشده است.</div> : chartDays.map((item) => <div className="chartCol" key={item.date} title={`${formatDay(item.date)}: ${item.views.toLocaleString('fa-IR')} بازدید`}><div className="chartBar" style={{ height: `${Math.max(item.views ? 8 : 2, (item.views / maxDailyViews) * 100)}%` }}></div><small>{formatDay(item.date)}</small></div>)}
+        </div>
+        <div className="chartLegend"><span>۳۰ روز اخیر</span><strong>{stats.last_30_days.toLocaleString('fa-IR')} بازدید</strong></div>
+      </section>
+
+      <section className="topArticles">
         <h2>پربازدیدترین مطالب</h2>
         {topArticles.map((article, index) => <div className="topArticle" key={article.id}>
           <span>{(index + 1).toLocaleString('fa-IR')}</span><b>{article.title}</b><strong>{Number(article.views || 0).toLocaleString('fa-IR')} بازدید</strong>
         </div>)}
-      </section>}
+      </section>
 
       <section className="setup"><strong>راه‌اندازی مدیر اول</strong><p>کد یک‌بارمصرف راه‌اندازی را وارد کنید.</p><input value={setup} onChange={e => setSetup(e.target.value)} placeholder="کد راه‌اندازی"/><button onClick={claim}>فعال‌سازی</button></section>
       <div className="adminActions"><button className="cta" onClick={newArticle}>+ مقاله جدید</button></div>
