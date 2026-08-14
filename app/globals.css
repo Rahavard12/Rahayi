@@ -103,8 +103,6 @@ footer small{margin-right:auto;color:#68716b}
 .sectionTitle h2{margin:0;color:#edf0ec;font-size:28px;line-height:1.5}
 .sectionTitle button{border:1px solid #414943;background:#1b201e;color:#d9dedb;padding:9px 14px;border-radius:4px;font:inherit;cursor:pointer}
 .sectionTitle button:disabled{opacity:.55;cursor:wait}
-
-/* Robust 30-day analytics chart. Flexbox avoids grid auto-placement issues in RTL layouts. */
 .viewsChart{width:100%;min-width:0;height:300px;display:flex;flex-direction:row;align-items:stretch;gap:6px;border-top:1px solid #252c28;padding:18px 4px 8px;direction:ltr;overflow-x:auto;overflow-y:hidden;background:repeating-linear-gradient(to bottom,transparent 0,transparent 24.5%,#202622 25%,transparent 25.5%,transparent 49.5%,#202622 50%,transparent 50.5%,transparent 74.5%,#202622 75%,transparent 75.5%)}
 .chartColumn{height:100%;min-width:28px;flex:1 0 28px;display:grid;grid-template-rows:20px minmax(0,1fr) 20px;align-items:stretch;gap:5px;text-align:center}
 .chartValue{font-size:9px;line-height:20px;color:#aeb6b0;direction:rtl;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -149,6 +147,21 @@ footer small{margin-right:auto;color:#68716b}
 .draftSummary{margin-top:18px;padding:14px 16px;border:1px solid #303733;display:flex;align-items:center;justify-content:space-between;color:#87918a;font-size:12px}
 .draftSummary strong{color:#d4af37;font-size:18px}
 
+/* Current /manage chart markup */
+.visitAnalytics{margin:28px 0;background:#171d1a;border:1px solid #303733;padding:24px;overflow:hidden}
+.visitAnalyticsHead{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:22px}
+.visitAnalyticsHead h2{margin:0 0 7px;color:#edf0ec;font-size:28px;line-height:1.5}
+.visitAnalyticsHead p{margin:0;color:#87918a;font-size:13px}
+.visitAnalyticsHead button{border:1px solid #414943;background:#1b201e;color:#d9dedb;padding:9px 14px;border-radius:4px;font:inherit;cursor:pointer;white-space:nowrap}
+.visitAnalyticsHead button:disabled{opacity:.55;cursor:wait}
+.visitChart{width:100%;height:320px;display:flex;flex-direction:row;align-items:flex-end;gap:6px;direction:ltr;position:relative;padding:20px 8px 34px;overflow-x:auto;overflow-y:hidden;border-top:1px solid #252c28;border-bottom:1px solid #343b37;background:repeating-linear-gradient(to bottom,transparent 0,transparent 24.5%,#202622 25%,transparent 25.5%,transparent 49.5%,#202622 50%,transparent 50.5%,transparent 74.5%,#202622 75%,transparent 75.5%)}
+.chartCol{height:100%;min-width:28px;flex:1 0 28px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;text-align:center}
+.chartCol .chartBar{width:min(22px,72%);height:var(--bar-height,2%);min-height:2px;max-height:100%;flex:0 0 auto;background:#d4af37;border-radius:4px 4px 0 0;opacity:.92;transition:height .25s ease;box-shadow:0 0 0 1px rgba(212,175,55,.08)}
+.chartCol small{display:block;height:18px;line-height:18px;font-size:10px;color:#7f8982;white-space:nowrap;direction:ltr}
+.chartLegend{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-top:14px;color:#87918a;font-size:12px}
+.chartLegend strong{color:#d4af37;font-size:13px}
+.emptyChart{width:100%;height:100%;display:grid;place-items:center;color:#87918a;font-size:13px}
+
 @media(max-width:1000px){
   .adminStats{grid-template-columns:repeat(3,1fr)}
   .adminGrid{grid-template-columns:1fr}
@@ -182,6 +195,11 @@ footer small{margin-right:auto;color:#68716b}
   .adminForm,.adminArticles{padding:18px}
   .adminItemMain{align-items:flex-start;flex-direction:column}
   .adminItemActions{width:100%}
+  .visitAnalytics{padding:18px 12px}
+  .visitAnalyticsHead{align-items:flex-start;flex-direction:column;gap:12px}
+  .visitAnalyticsHead button{align-self:flex-start}
+  .visitChart{height:285px;min-width:780px;gap:5px}
+  .chartCol{min-width:24px;flex-basis:24px}
 }
 
 @media(max-width:480px){
