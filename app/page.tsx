@@ -1,4 +1,28 @@
 import { articles as fallback } from '../lib/articles'
 import { serverDb } from '../lib/db-server'
 export const revalidate=30
-export default async function Home(){const db=serverDb();const {data}=db?await db.from('articles').select('slug,title,category,excerpt').eq('published',true).order('published_at',{ascending:false}).limit(12):{data:null};const articles=(data&&data.length?data:fallback);return <main><header className="header"><div className="container nav"><a className="logo" href="/">Rahayi<span>رهایی</span></a><nav><a href="#latest">آخرین مطالب</a><a href="#about">درباره رهایی</a><a href="/manage">مدیریت</a></nav><button>جست‌وجو</button></div></header><section className="hero"><div className="container heroGrid"><div><p className="eyebrow">وبلاگ سیاسی رهایی</p><h1>سرزمین جاویدان</h1><a className="cta" href="#latest">مطالعه مطالب ←</a></div><div className="heroCard"><img src="/khaleej-fars.svg" alt="خلیج همیشه فارس" /></div></div></section><section id="latest" className="section container"><div className="sectionHead"><div><p className="eyebrow">منتخب سردبیر</p><h2>آخرین مطالب</h2></div></div><div className="posts">{articles.map((p:any,i:number)=><article className="post" key={p.slug}><div className="number">{String(i+1).padStart(2,'0')}</div><span>{p.category}</span><h3>{p.title}</h3><p>{p.excerpt}</p><a href={`/article/${p.slug}`}>ادامه مطلب ←</a></article>)}</div></section><section id="about" className="about"><div className="container aboutGrid"><div><p className="eyebrow">درباره رهایی</p><h2>یک نگاه مستقل،<br/>بدون هیاهو.</h2></div><p>«رهایی» یک وبلاگ سیاسی برای انتشار یادداشت‌ها و تحلیل‌هایی درباره ایران، جهان و مسائل اجتماعی است. هدف ما ایجاد فضایی برای فکر کردن، پرسیدن و شنیدن دیدگاه‌های متفاوت است.</p></div></section><footer><div className="container"><strong>Rahayi</strong><span>رهایی؛ برای پرسیدن و فهمیدن.</span><small>© 2026 Rahayi</small></div></footer></main>}
+
+export default async function Home(){
+  const db=serverDb()
+  const {data}=db?await db.from('articles').select('slug,title,category,excerpt').eq('published',true).order('published_at',{ascending:false}):{data:null}
+  const articles=(data&&data.length?data:fallback)
+
+  return <main>
+    <header className="header"><div className="container nav"><a className="logo" href="/">Rahayi<span>رهایی</span></a><nav><a href="#latest">آخرین مطالب</a><a href="#about">درباره رهایی</a><a href="/manage">مدیریت</a></nav><button>جست‌وجو</button></div></header>
+    <section className="hero"><div className="container heroGrid"><div><p className="eyebrow">وبلاگ سیاسی رهایی</p><h1>سرزمین جاویدان</h1><a className="cta" href="#latest">مطالعه مطالب ←</a></div><div className="heroCard"><img src="/khaleej-fars.svg" alt="خلیج همیشه فارس" /></div></div></section>
+    <section id="latest" className="section container">
+      <div className="sectionHead"><div><p className="eyebrow">منتخب سردبیر</p><h2>آخرین مطالب</h2></div></div>
+      <div className="latestLayout">
+        <aside className="articleSidebar" aria-label="فهرست همه مقالات">
+          <div className="sidebarHead"><p className="eyebrow">آرشیو</p><h2>همه مقالات</h2><span>{articles.length} مقاله</span></div>
+          <div className="sidebarList">
+            {articles.map((p:any,i:number)=><a className="sidebarArticle" key={p.slug} href={`/article/${p.slug}`}><span className="sidebarNumber">{String(i+1).padStart(2,'0')}</span><span className="sidebarArticleText"><b>{p.title}</b>{p.category&&<small>{p.category}</small>}</span></a>)}
+          </div>
+        </aside>
+        <div className="posts">{articles.map((p:any,i:number)=><article className="post" key={p.slug}><div className="number">{String(i+1).padStart(2,'0')}</div><span>{p.category}</span><h3>{p.title}</h3><p>{p.excerpt}</p><a href={`/article/${p.slug}`}>ادامه مطلب ←</a></article>)}</div>
+      </div>
+    </section>
+    <section id="about" className="about"><div className="container aboutGrid"><div><p className="eyebrow">درباره رهایی</p><h2>یک نگاه مستقل،<br/>بدون هیاهو.</h2></div><p>«رهایی» یک وبلاگ سیاسی برای انتشار یادداشت‌ها و تحلیل‌هایی درباره ایران، جهان و مسائل اجتماعی است. هدف ما ایجاد فضایی برای فکر کردن، پرسیدن و شنیدن دیدگاه‌های متفاوت است.</p></div></section>
+    <footer><div className="container"><strong>Rahayi</strong><span>رهایی؛ برای پرسیدن و فهمیدن.</span><small>© 2026 Rahayi</small></div></footer>
+  </main>
+}
